@@ -4,6 +4,7 @@ public final class PetitClient: Service {
     let httpClient: Client
     let clientId: String
     let baseUrl: URL
+    private let dateFormatter: DateFormatter
 
     public init(
         httpClient: Client,
@@ -13,6 +14,8 @@ public final class PetitClient: Service {
         self.httpClient = httpClient
         self.clientId = clientId
         self.baseUrl = baseUrl
+        self.dateFormatter = DateFormatter()
+        self.dateFormatter.dateFormat = "yyyy-MM-dd"
     }
 
     public func fetchLyrics(
@@ -31,7 +34,7 @@ public final class PetitClient: Service {
             .post(url) { request in
                 try request.content.encode(body, as: .formData)
             }
-            .decodeXML(to: Result.self)
+            .decodeXML(to: Result.self, using: dateFormatter)
             .map { result in
                 guard let songWrapper = result.songs.song else {
                     throw Abort(.expectationFailed, reason: "Lyrics ID seems to be invalid")

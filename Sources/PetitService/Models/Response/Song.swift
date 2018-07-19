@@ -6,5 +6,5 @@ public struct Song: Content {
     public let duration: Int
     public let lyricsData: String?
     public let uploadDate: Date
-    public let releaseDate: Date
+    public let releaseDate: Date?
 }

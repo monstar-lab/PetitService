@@ -18,7 +18,7 @@ public final class PetitClient: Service {
     public func fetchLyrics(
         with id: Int,
         on container: Container
-    ) throws -> Future<Result> {
+    ) throws -> Future<Lyrics> {
         let url = constructUrl(for: .lyrics)
         let body = LyricsRequest(
             lyricsId: id,
@@ -27,9 +27,24 @@ public final class PetitClient: Service {
             lyricsType: 2
         )
 
-        return try httpClient.post(url) { request in
-            try request.content.encode(body, as: .formData)
-        }.decodeXML(to: Result.self)
+        return try httpClient
+            .post(url) { request in
+                try request.content.encode(body, as: .formData)
+            }
+            .decodeXML(to: Result.self)
+            .map { result in
+                guard let songWrapper = result.songs.song else {
+                    throw Abort(.expectationFailed, reason: "Lyrics ID seems to be invalid")
+                }
+
+                guard let lyricsData = songWrapper.first?.lyricsData?.data(using: .utf8) else {
+                    throw Abort(.noContent, reason: "Failed to fetch lyrics for given song")
+                }
+
+                let decoder = JSONDecoder()
+
+                return try decoder.decode(Lyrics.self, from: lyricsData)
+            }
     }
 
     private func constructUrl(for endpoint: Endpoint) -> URL {

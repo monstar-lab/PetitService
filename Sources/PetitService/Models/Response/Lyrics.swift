@@ -1,5 +1,5 @@
 import Vapor
 
 public struct Lyrics: Codable {
-    let lines: [LyricsLine]
+    public let lines: [LyricsLine]
 }

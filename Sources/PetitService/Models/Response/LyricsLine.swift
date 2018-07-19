@@ -1,6 +1,6 @@
 import Vapor
 
 public struct LyricsLine: Codable {
-    let time: Int
-    let words: [LyricsWord]
+    public let time: Int
+    public let words: [LyricsWord]
 }

@@ -1,6 +1,6 @@
 import Vapor
 
 public struct Song: Content {
-    let title: String
-    let lyricsData: String?
+    public let title: String
+    public let lyricsData: String?
 }

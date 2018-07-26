@@ -1,6 +1,6 @@
-import Foundation
+import Vapor
 
-struct LyricsRequest: Encodable {
+struct LyricsRequest: Content {
     let lyricsId: Int
     // let title: String?
     // let artistId: Int?

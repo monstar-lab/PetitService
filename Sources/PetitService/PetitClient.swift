@@ -18,30 +18,38 @@ public final class PetitClient: Service {
         self.dateFormatter.dateFormat = "yyyy-MM-dd"
     }
 
+    public func fetchSongDetails(
+        with id: Int,
+        on container: Container
+    ) throws -> Future<Song> {
+        let url = constructUrl(for: .lyrics)
+        let body = lyricsRequestBody(for: id, lyricsType: 0)
+
+        return try getResponse(to: url, body: body)
+            .map { result in
+                guard let song = result.songs.song?.first else {
+                    throw Abort(.preconditionFailed, reason: "Lyrics ID seems to be invalid")
+                }
+
+                return song
+            }
+    }
+
     public func fetchLyrics(
         with id: Int,
         on container: Container
     ) throws -> Future<Lyrics> {
         let url = constructUrl(for: .lyrics)
-        let body = LyricsRequest(
-            lyricsId: id,
-            clientAppId: clientId,
-            terminalType: 20,
-            lyricsType: 2
-        )
+        let body = lyricsRequestBody(for: id, lyricsType: 2)
 
-        return try httpClient
-            .post(url) { request in
-                try request.content.encode(body, as: .formData)
-            }
-            .decodeXML(to: Result.self, using: dateFormatter)
+        return try getResponse(to: url, body: body)
             .map { result in
-                guard let songWrapper = result.songs.song else {
-                    throw Abort(.expectationFailed, reason: "Lyrics ID seems to be invalid")
+                guard let song = result.songs.song else {
+                    throw Abort(.preconditionFailed, reason: "Lyrics ID seems to be invalid")
                 }
 
-                guard let lyricsData = songWrapper.first?.lyricsData?.data(using: .utf8) else {
-                    throw Abort(.noContent, reason: "Failed to fetch lyrics for given song")
+                guard let lyricsData = song.first?.lyricsData?.data(using: .utf8) else {
+                    throw Abort(.expectationFailed, reason: "Failed to fetch lyrics for given song")
                 }
 
                 let decoder = JSONDecoder()
@@ -52,5 +60,25 @@ public final class PetitClient: Service {
 
     private func constructUrl(for endpoint: Endpoint) -> URL {
         return baseUrl.appendingPathComponent(endpoint.rawValue)
+    }
+
+    private func lyricsRequestBody(for lyricsId: Int, lyricsType: Int) -> LyricsRequest {
+        return LyricsRequest(
+            lyricsId: lyricsId,
+            clientAppId: clientId,
+            terminalType: kTerminalType,
+            lyricsType: lyricsType
+        )
+    }
+
+    private func getResponse<T>(
+        to endpoint: URL,
+        body: T
+    ) throws -> Future<Result> where T: Content {
+        return try httpClient
+            .post(endpoint) { request in
+                try request.content.encode(body, as: .formData)
+            }
+            .decodeXML(to: Result.self, using: dateFormatter)
     }
 }

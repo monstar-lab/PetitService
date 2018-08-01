@@ -69,7 +69,7 @@ public final class PetitClient: Service {
         return try getResponse(to: url, body: body)
             .map { result in
                 guard let songs = result.songs.song else {
-                    throw Abort(.expectationFailed, reason: "Unable to fetch latest lyrics")
+                    return [Song]()
                 }
 
                 return songs

@@ -58,6 +58,24 @@ public final class PetitClient: Service {
             }
     }
 
+    public func getLatestLyrics(
+        offset: Int = 0,
+        maxCount: Int = 100,
+        on container: Container
+    ) throws -> Future<[Song]> {
+        let url = constructUrl(for: .newLyrics)
+        let body = NewLyricsRequest(clientAppId: clientId, index: offset, maxCount: maxCount)
+
+        return try getResponse(to: url, body: body)
+            .map { result in
+                guard let songs = result.songs.song else {
+                    throw Abort(.expectationFailed, reason: "Unable to fetch latest lyrics")
+                }
+
+                return songs
+            }
+    }
+
     private func constructUrl(for endpoint: Endpoint) -> URL {
         return baseUrl.appendingPathComponent(endpoint.rawValue)
     }

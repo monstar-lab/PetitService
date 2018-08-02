@@ -48,7 +48,11 @@ public final class PetitClient: Service {
                     throw Abort(.preconditionFailed, reason: "Lyrics ID seems to be invalid")
                 }
 
-                guard let song = songArray.first, song.availableLyricsType >= 2 else {
+                guard
+                    let song = songArray.first,
+                    let availableLyricsType = song.availableLyricsType,
+                    availableLyricsType >= 2
+                else {
                     throw Abort(.expectationFailed, reason: "Timed lyrics not available")
                 }
 

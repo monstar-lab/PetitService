@@ -44,11 +44,15 @@ public final class PetitClient: Service {
 
         return try getResponse(to: url, body: body)
             .map { result in
-                guard let song = result.songs.song else {
+                guard let songArray = result.songs.song else {
                     throw Abort(.preconditionFailed, reason: "Lyrics ID seems to be invalid")
                 }
 
-                guard let lyricsData = song.first?.lyricsData?.data(using: .utf8) else {
+                guard let song = songArray.first, song.availableLyricsType >= 2 else {
+                    throw Abort(.expectationFailed, reason: "Timed lyrics not available")
+                }
+
+                guard let lyricsData = song.lyricsData?.data(using: .utf8) else {
                     throw Abort(.expectationFailed, reason: "Failed to fetch lyrics for given song")
                 }
 
@@ -58,7 +62,7 @@ public final class PetitClient: Service {
             }
     }
 
-    public func getLatestLyrics(
+    public func getLatestSongs(
         offset: Int = 0,
         maxCount: Int = 100,
         on container: Container

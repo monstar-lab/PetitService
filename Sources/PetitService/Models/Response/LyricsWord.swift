@@ -5,8 +5,6 @@ public struct LyricsWord: Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        let text = try container.decode(String.self, forKey: .string)
-
-        self.string = text != "＜♪＞" ? text : ""
+        self.string = try container.decode(String.self, forKey: .string)
     }
 }
